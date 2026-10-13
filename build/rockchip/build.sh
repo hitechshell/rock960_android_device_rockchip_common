@@ -123,10 +123,15 @@ lunch $TARGET_PRODUCT-$BUILD_VARIANT
 
 DATE=$(date  +%Y%m%d.%H%M)
 
+CROSS_COMPILE_UBOOT=aarch64-linux-gnu-
+
 # build uboot
 if [ "$BUILD_UBOOT" = true ] ; then
+echo "start build A-TF"
+cd arm-trusted-firmware && make realclean && make PLAT=rk3399 CROSS_COMPILE=$CROSS_COMPILE_UBOOT bl31 && cd -
+BL31="$(pwd)/arm-trusted-firmware/build/rk3399/release/bl31/bl31.elf"
 echo "start build uboot"
-cd u-boot && make clean &&  make mrproper &&  make distclean && ./make.sh $UBOOT_DEFCONFIG && cd -
+cd u-boot && make clean &&  make mrproper &&  make distclean && make rock960-rk3399_defconfig && make -j$(nproc) BL31=$BL31 CROSS_COMPILE=$CROSS_COMPILE_UBOOT && cd -
 if [ $? -eq 0 ]; then
     echo "Build uboot ok!"
 else
@@ -161,14 +166,14 @@ fi
 cp -rf $KERNEL_DEBUG $OUT/kernel
 fi
 
-echo "package resoure.img with charger images"
-cd u-boot && ./scripts/pack_resource.sh ../$LOCAL_KERNEL_PATH/resource.img && cp resource.img ../$LOCAL_KERNEL_PATH/resource.img && cd -
+#echo "package resoure.img with charger images"
+#cd u-boot && ./scripts/pack_resource.sh ../$LOCAL_KERNEL_PATH/resource.img && cp resource.img ../$LOCAL_KERNEL_PATH/resource.img && cd -
 
 IS_VEHICLE=`get_build_var BOARD_ROCKCHIP_VEHICLE`
 LOGO_VEHICLE_PATH=`get_build_var TARGET_DEVICE_DIR`
-if [ $IS_VEHICLE = "true" ]; then
-./$LOGO_VEHICLE_PATH/pack_resource.sh ./$LOCAL_KERNEL_PATH/resource.img && cp resource.img ./$LOCAL_KERNEL_PATH/resource.img
-fi
+#if [ $IS_VEHICLE = "true" ]; then
+#./$LOGO_VEHICLE_PATH/pack_resource.sh ./$LOCAL_KERNEL_PATH/resource.img && cp resource.img ./$LOCAL_KERNEL_PATH/resource.img
+#fi
 
 # build android
 if [ "$BUILD_ANDROID" = true ] ; then
@@ -251,7 +256,6 @@ else # repack v2 boot
     BOOT_CMDLINE=`get_build_var BOARD_KERNEL_CMDLINE`
     SECURITY_LEVEL=`get_build_var PLATFORM_SECURITY_PATCH`
     mkbootfs -d $OUT/system $OUT/ramdisk | minigzip > $OUT/ramdisk.img
-    mkbootimg --kernel $OUT/kernel --ramdisk $OUT/ramdisk.img --dtb $OUT/dtb.img --cmdline "$BOOT_CMDLINE" --os_version 12 --os_patch_level $SECURITY_LEVEL --second $LOCAL_KERNEL_PATH/resource.img --header_version 2 --output $OUT/boot.img
 fi
 
 if [ "$BUILD_OTA" != true ] ; then

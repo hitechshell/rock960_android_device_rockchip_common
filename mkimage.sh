@@ -83,7 +83,7 @@ fi
 cp -a $BOARD_DTBO_IMG $IMAGE_PATH/dtbo.img
 echo "done."
 
-copy_images $KERNEL_PATH/resource.img $IMAGE_PATH/resource.img
+#copy_images $KERNEL_PATH/resource.img $IMAGE_PATH/resource.img
 copy_images_from_out boot.img
 copy_images_from_out boot-debug.img
 copy_images_from_out vendor_boot.img
@@ -114,12 +114,20 @@ cp -a rkst/Image/pcba_small_misc.img $IMAGE_PATH/pcba_small_misc.img
 cp -a rkst/Image/pcba_whole_misc.img $IMAGE_PATH/pcba_whole_misc.img
 echo "done."
 
-if [ -f $UBOOT_PATH/uboot.img ]
+if [ -f $UBOOT_PATH/u-boot.itb ]
 then
 	echo "create uboot.img..."
-	cp -a $UBOOT_PATH/uboot.img $IMAGE_PATH/uboot.img
+	cp -a $UBOOT_PATH/u-boot.itb $IMAGE_PATH/uboot.img
 else
-	echo "$UBOOT_PATH/uboot.img not fount! Please make it from $UBOOT_PATH first!"
+	echo "$UBOOT_PATH/u-boot.itb not fount! Please make it from $UBOOT_PATH first!"
+fi
+
+if [ -f $UBOOT_PATH/u-boot-rockchip.bin ]
+then
+	echo "create u-boot-rockchip.bin..."
+	cp -a $UBOOT_PATH/u-boot-rockchip.bin $IMAGE_PATH/u-boot-rockchip.bin
+else
+	echo "$UBOOT_PATH/u-boot-rockchip.bin not fount! Please make it from $UBOOT_PATH first!"
 fi
 
 if [ -f $UBOOT_PATH/trust_nand.img ]
@@ -170,6 +178,7 @@ if [ -f $UBOOT_PATH/idbloader.img ]
 then
 	echo -n "create idb loader..."
 	cp -a $UBOOT_PATH/idbloader.img $IMAGE_PATH/idbloader.img
+	cp -a $UBOOT_PATH/idbloader.img $IMAGE_PATH/MiniLoaderAll.bin
 	echo "idb loader done."
 fi
 
